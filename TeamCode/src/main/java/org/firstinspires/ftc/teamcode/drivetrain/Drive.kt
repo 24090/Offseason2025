@@ -1,17 +1,21 @@
 package org.firstinspires.ftc.teamcode.drivetrain
 
-import SquID
 import com.qualcomm.robotcore.hardware.HardwareMap
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotor
-import org.firstinspires.ftc.teamcode.controlsystems.bangBang
+import org.firstinspires.ftc.teamcode.controlsystems.BangBang
+import org.firstinspires.ftc.teamcode.controlsystems.PDL
+import org.firstinspires.ftc.teamcode.controlsystems.SquID
 
 class Drive(hwMap: HardwareMap) {
     private val localizer = Localizer(hwMap)
 
     var targetPose = Pose(0.0, 0.0, 0.0)
 
-    val kHeading = 0.0;
-    val kTranslational = 0.0;
+    val kSqH = 0.0;
+    val kPT = 0.0;
+    val kDT = 0.0;
+    val kLT = 0.0;
+    val threshT = 0.25;
 
     private val flMotor: CachingDcMotor = hwMap.dcMotor.get("flMotor") as CachingDcMotor;
     private val frMotor: CachingDcMotor = hwMap.dcMotor.get("frMotor") as CachingDcMotor;
@@ -25,8 +29,10 @@ class Drive(hwMap: HardwareMap) {
 
     private fun update(){
         val error = localizer.fieldPoseToRelative(targetPose)
-        turn = SquID(error.heading, kHeading)
-        val translational = bangBang(Vector.fromPose(error), kTranslational)
+        val dError = localizer.poseVel
+
+        turn = SquID(error.heading, kSqH)
+        val translational = PDL(Vector.fromPose(error), Vector.fromPose(dError), kPT, kDT, kLT)
         drive = translational.x
         strafe = translational.y
 

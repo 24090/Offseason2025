@@ -14,7 +14,7 @@ class Localizer(hwMap: HardwareMap) {
         TODO("Encoder Distances, Directions should be set")
     }
 
-    var position
+    var pose
         get() = Pose(pinpoint.position)
         set(v){ pinpoint.position = Pose2D(DistanceUnit.INCH, v.x, v.y, AngleUnit.RADIANS, v.heading) }
 
@@ -25,8 +25,8 @@ class Localizer(hwMap: HardwareMap) {
     val heading
         get() = pinpoint.getHeading(AngleUnit.RADIANS);
 
-    val positionVel
-        get() = Pose(pinpoint.position)
+    val poseVel
+        get() = Pose(xVel, yVel, headingVel)
     val xVel
         get() = pinpoint.getVelX(DistanceUnit.INCH)
     val yVel

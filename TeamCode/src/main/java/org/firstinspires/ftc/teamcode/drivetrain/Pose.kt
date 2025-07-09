@@ -17,6 +17,10 @@ data class Pose(var x: Double, var y: Double, var heading: Double) {
     operator fun times(v: Number): Pose{
         return Pose(x * v.toDouble(), y * v.toDouble(), heading * v.toDouble())
     }
+
+    operator fun unaryMinus(): Pose{
+        return Pose(-x, -y, -heading)
+    }
 };
 
 
