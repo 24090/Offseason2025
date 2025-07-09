@@ -9,7 +9,15 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 fun Pose(pose2d: Pose2D) = Pose(pose2d.getX(DistanceUnit.INCH), pose2d.getY(DistanceUnit.INCH), pose2d.getHeading(AngleUnit.RADIANS))
-data class Pose(var x: Double, var y: Double, var heading: Double) {};
+data class Pose(var x: Double, var y: Double, var heading: Double) {
+    operator fun plus(v: Pose): Pose{
+        return Pose(x + v.x, y + v.y, heading+v.heading)
+    }
+
+    operator fun times(v: Number): Pose{
+        return Pose(x * v.toDouble(), y * v.toDouble(), heading * v.toDouble())
+    }
+};
 
 
 data class Vector private constructor(val angle: Double, val length: Double){
