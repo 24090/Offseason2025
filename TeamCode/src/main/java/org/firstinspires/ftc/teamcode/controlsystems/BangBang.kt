@@ -1,22 +1,11 @@
 package org.firstinspires.ftc.teamcode.controlsystems
-
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
 import kotlin.math.sign
 
-class BangBang1D(
-    val getError: () -> Double, val setOutput: (v: Double) -> Unit, val getK: () -> Double
-): ControlSystem()
-{
-    override fun update() {
-        setOutput(getK() * getError().sign)
-    }
+fun bangBang(error: Vector, k: Double): Vector{
+    return error.norm() * k
 }
 
-class BangBang2D(
-    val getError: () -> Vector, val setOutput: (Vector) -> Unit, val getK: () -> Double
-): ControlSystem()
-{
-    override fun update() {
-        setOutput(getError().norm() * getK())
-    }
+fun bangBang(error: Double, k: Double): Double{
+    return k * error.sign
 }
