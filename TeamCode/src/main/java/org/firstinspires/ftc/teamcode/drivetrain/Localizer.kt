@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drivetrain
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.RADIANS
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
@@ -29,7 +30,7 @@ class Localizer(hwMap: HardwareMap) {
     val x
         get() = pose.x
     val y
-        get() =  pose.y
+        get() = pose.y
     val heading
         get() = pose.heading
 
@@ -48,12 +49,12 @@ class Localizer(hwMap: HardwareMap) {
 
     fun fieldPoseToRelative(fieldPose: Pose): Pose {
         val translation = (Vector.fromCartesian(fieldPose.x, fieldPose.y) - Vector.fromCartesian(x, y)).rotated(-heading)
-        return Pose(translation.x, translation.y, fieldPose.heading - heading)
+        return Pose(translation.x, translation.y, AngleUnit.normalizeRadians(fieldPose.heading - heading))
     }
 
     fun relativePoseToField(relativePose: Pose): Pose {
         val translation = Vector.fromCartesian(relativePose.x, relativePose.y).rotated(heading) + Vector.fromCartesian(x, y)
-        return Pose(translation.x, translation.y, heading + relativePose.heading)
+        return Pose(translation.x, translation.y, AngleUnit.normalizeRadians(heading + relativePose.heading))
     }
 
 }
