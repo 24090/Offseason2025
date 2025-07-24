@@ -23,19 +23,23 @@ class Drive(hwMap: HardwareMap) {
 
     var targetPose = Pose(0.0, 0.0, 0.0)
 
-    private val flMotor: CachingDcMotor = hwMap.dcMotor.get("flMotor") as CachingDcMotor;
-    private val frMotor: CachingDcMotor = hwMap.dcMotor.get("frMotor") as CachingDcMotor;
-    private val blMotor: CachingDcMotor = hwMap.dcMotor.get("blMotor") as CachingDcMotor;
-    private val brMotor: CachingDcMotor = hwMap.dcMotor.get("bRMotor") as CachingDcMotor;
+    private val flMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "flMotor"));
+        fun setFlPower(power: Double){flMotor.power = power}
+    private val frMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "frMotor"));
+        fun setFrPower(power: Double){frMotor.power = power}
+    private val blMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java,"blMotor"));
+        fun setBlPower(power: Double){blMotor.power = power}
+    private val brMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java,"brMotor"));
+        fun setBrPower(power: Double){brMotor.power = power}
 
     var drive = 0.0;
     var strafe = 0.0;
     var turn = 0.0;
 
     init {
-        flMotor.direction = Direction.FORWARD
+        flMotor.direction = Direction.REVERSE
         frMotor.direction = Direction.FORWARD
-        blMotor.direction = Direction.FORWARD
+        blMotor.direction = Direction.REVERSE
         brMotor.direction = Direction.FORWARD
     }
     fun setMotorPowers(){
@@ -46,6 +50,7 @@ class Drive(hwMap: HardwareMap) {
     }
 
     fun update(){
+        localizer.update()
         val error = localizer.fieldPoseToRelative(targetPose)
         val dError = localizer.poseVel
 

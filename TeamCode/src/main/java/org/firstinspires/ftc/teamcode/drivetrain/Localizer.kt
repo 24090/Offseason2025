@@ -9,9 +9,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 
 class Localizer(hwMap: HardwareMap) {
     private var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
-
+    companion object {
+        @JvmStatic var driveX: Double = 6.77;
+        @JvmStatic var strafeY: Double = 3.80;
+        @JvmStatic var encoderResolution: Double = 336.88;
+    }
     init {
-        TODO("Encoder Distances, Directions should be set")
+        pinpoint.setPosX(driveX, DistanceUnit.INCH)
+        pinpoint.setPosY(strafeY, DistanceUnit.INCH)
+        pinpoint.setEncoderResolution(encoderResolution, DistanceUnit.INCH)
+        pinpoint.setYawScalar(1.0)
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD)
     }
 
     var pose
@@ -33,6 +41,10 @@ class Localizer(hwMap: HardwareMap) {
         get() =  pinpoint.getVelY(DistanceUnit.INCH);
     val headingVel
         get() = pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
+
+    fun update(){
+        pinpoint.update()
+    }
 
     fun fieldPoseToRelative(fieldPose: Pose): Pose {
         val translation = (Vector.fromCartesian(fieldPose.x, fieldPose.y) - Vector.fromCartesian(x, y)).rotated(-heading)
