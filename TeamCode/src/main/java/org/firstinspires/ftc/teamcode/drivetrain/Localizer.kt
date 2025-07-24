@@ -2,29 +2,29 @@ package org.firstinspires.ftc.teamcode.drivetrain
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.RADIANS
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 
 class Localizer(hwMap: HardwareMap) {
     private var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
     companion object {
-        @JvmStatic var driveX: Double = 6.77;
-        @JvmStatic var strafeY: Double = 3.80;
-        @JvmStatic var encoderResolution: Double = 336.88;
+        @JvmStatic var driveY: Double = 3.80;
+        @JvmStatic var strafeX: Double = -6.77;
+        @JvmStatic var encoderResolution: Double = 0.52216;
     }
     init {
-        pinpoint.setPosX(driveX, DistanceUnit.INCH)
-        pinpoint.setPosY(strafeY, DistanceUnit.INCH)
-        pinpoint.setEncoderResolution(encoderResolution, DistanceUnit.INCH)
+        // X and Y are INTENTIONALLY swapped
+        pinpoint.setOffsets(driveY, strafeX, INCH)
+        pinpoint.setEncoderResolution(encoderResolution, INCH)
         pinpoint.setYawScalar(1.0)
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD)
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED)
     }
 
     var pose
         get() = Pose(pinpoint.position)
-        set(v){ pinpoint.position = Pose2D(DistanceUnit.INCH, v.x, v.y, AngleUnit.RADIANS, v.heading) }
+        set(v){ pinpoint.position = Pose2D(INCH, v.x, v.y, RADIANS, v.heading) }
 
     val x
         get() = pose.x
@@ -36,9 +36,9 @@ class Localizer(hwMap: HardwareMap) {
     val poseVel
         get() = Pose(xVel, yVel, headingVel)
     val xVel
-        get() = pinpoint.getVelX(DistanceUnit.INCH)
+        get() = pinpoint.getVelX(INCH)
     val yVel
-        get() =  pinpoint.getVelY(DistanceUnit.INCH);
+        get() =  pinpoint.getVelY(INCH);
     val headingVel
         get() = pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
 

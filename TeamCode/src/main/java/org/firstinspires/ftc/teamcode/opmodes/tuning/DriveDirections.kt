@@ -23,6 +23,7 @@ class DriveDirections: LinearOpMode() {
             telemetry.addLine("Switch directions of backwards encoders in Localizer.kt")
             telemetry.addData("Strafe", drive.localizer.y)
             telemetry.addData("Drive", drive.localizer.x)
+            telemetry.addData("Heading", drive.localizer.heading)
             telemetry.update()
             drive.setFlPower(gamepad1.x.toDouble())
             drive.setFrPower(gamepad1.y.toDouble())

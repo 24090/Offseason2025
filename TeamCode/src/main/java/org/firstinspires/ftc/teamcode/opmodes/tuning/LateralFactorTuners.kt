@@ -35,8 +35,8 @@ abstract class MaxSpeedTuner: LinearOpMode () {
 
 @TeleOp(group = "Drive")
 class StrafeSpeedTuner: MaxSpeedTuner() {
-    override val drive: Double = 1.0;
-    override val strafe: Double = 0.0;
+    override val drive: Double = 0.0;
+    override val strafe: Double = 1.0;
     override val turn: Double = 0.0;
 }
 

@@ -43,10 +43,10 @@ class Drive(hwMap: HardwareMap) {
         brMotor.direction = Direction.FORWARD
     }
     fun setMotorPowers(){
-        flMotor.power = drive + strafe + turn
-        frMotor.power = drive - strafe + turn
-        blMotor.power = drive - strafe - turn
-        brMotor.power = drive + strafe - turn
+        flMotor.power = drive - strafe + turn
+        frMotor.power = drive + strafe + turn
+        blMotor.power = drive + strafe - turn
+        brMotor.power = drive - strafe - turn
     }
 
     fun update(){
