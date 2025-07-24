@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.drivetrain.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.util.BulkReads
 import kotlin.math.max
 
 @Disabled
@@ -16,6 +17,8 @@ abstract class MaxSpeedTuner: LinearOpMode () {
     private var maxSpeed: Double = 0.0;
     override fun runOpMode() {
         val drivetrain = Drive(hardwareMap);
+        val bulkReads = BulkReads(hardwareMap);
+        val speeds = ArrayList<Double>()
         drivetrain.drive = drive;
         drivetrain.strafe = strafe;
         drivetrain.turn = turn;
@@ -25,10 +28,11 @@ abstract class MaxSpeedTuner: LinearOpMode () {
         drivetrain.setMotorPowers();
 
         while (opModeIsActive()){
-            maxSpeed = max(maxSpeed, Vector.fromPose(drivetrain.localizer.poseVel).length)
+            bulkReads.update()
+            speeds.add(Vector.fromPose(drivetrain.localizer.poseVel).length)
         };
 
-        telemetry.addData("Max Speed", maxSpeed)
+        telemetry.addData("Avg Speed", speeds.average())
         telemetry.update()
     }
 }

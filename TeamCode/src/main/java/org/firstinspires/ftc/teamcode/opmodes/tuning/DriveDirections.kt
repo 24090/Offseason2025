@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.opmodes.tuning
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.drivetrain.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
+import org.firstinspires.ftc.teamcode.util.BulkReads
 
 @TeleOp(group = "Drive")
 class DriveDirections: LinearOpMode() {
@@ -11,10 +13,18 @@ class DriveDirections: LinearOpMode() {
 
     override fun runOpMode() {
         val drive = Drive(hardwareMap)
+        val bulkReads = BulkReads(hardwareMap)
         waitForStart()
         drive.localizer.pose = Pose(0.0,0.0,0.0);
         while (opModeIsActive()){
+            bulkReads.update()
             drive.localizer.update()
+
+            drive.setFlPower(gamepad1.x.toDouble())
+            drive.setFrPower(gamepad1.y.toDouble())
+            drive.setBlPower(gamepad1.a.toDouble())
+            drive.setBrPower(gamepad1.b.toDouble())
+
             telemetry.addLine("Switch directions of backwards motors in Drive.kt")
             telemetry.addLine("X -> FL")
             telemetry.addLine("Y -> FR")
@@ -25,10 +35,6 @@ class DriveDirections: LinearOpMode() {
             telemetry.addData("Drive", drive.localizer.x)
             telemetry.addData("Heading", drive.localizer.heading)
             telemetry.update()
-            drive.setFlPower(gamepad1.x.toDouble())
-            drive.setFrPower(gamepad1.y.toDouble())
-            drive.setBlPower(gamepad1.a.toDouble())
-            drive.setBrPower(gamepad1.b.toDouble())
         }
     }
 }
