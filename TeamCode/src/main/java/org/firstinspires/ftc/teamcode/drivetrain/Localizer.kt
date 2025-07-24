@@ -19,11 +19,11 @@ class Localizer(hwMap: HardwareMap) {
         set(v){ pinpoint.position = Pose2D(DistanceUnit.INCH, v.x, v.y, AngleUnit.RADIANS, v.heading) }
 
     val x
-        get() = pinpoint.getPosX(DistanceUnit.INCH)
+        get() = pose.x
     val y
-        get() =  pinpoint.getPosY(DistanceUnit.INCH);
+        get() =  pose.y
     val heading
-        get() = pinpoint.getHeading(AngleUnit.RADIANS);
+        get() = pose.heading
 
     val poseVel
         get() = Pose(xVel, yVel, headingVel)
