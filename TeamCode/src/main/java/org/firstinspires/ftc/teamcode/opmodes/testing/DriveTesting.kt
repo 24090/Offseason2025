@@ -23,7 +23,7 @@ class SquareTest: LinearOpMode() {
             when {
                 state == 0 -> {
                     drive.targetPose = Pose(12.0, 12.0, 0.0)
-                    if (drive.localizer.pose.inSquare(drive.targetPose, 1.5,1.5,0.04)) {
+                    if (drive.atTargetSquare(1.5,1.5,0.04)) {
                         state = 1
                     }
                 }

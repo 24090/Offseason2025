@@ -44,6 +44,17 @@ class Drive(hwMap: HardwareMap) {
         brMotor.direction = Direction.FORWARD
     }
 
+    // Util
+
+    fun atTargetCircle(distanceTolerance: Double, headingTolerance: Double): Boolean {
+        return localizer.pose.inCircle(targetPose, distanceTolerance, headingTolerance)
+    }
+    fun atTargetSquare(xTolerance: Double, yTolerance: Double, headingTolerance: Double): Boolean{
+        return localizer.pose.inSquare(targetPose, xTolerance, yTolerance, headingTolerance)
+    }
+
+    // Drive math, etc
+
     fun setMotorPowers(){
         flMotor.power = drive - strafe - turn
         frMotor.power = drive + strafe + turn
