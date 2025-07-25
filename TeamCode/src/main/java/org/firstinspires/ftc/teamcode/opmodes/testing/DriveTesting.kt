@@ -9,9 +9,6 @@ import kotlin.math.absoluteValue
 
 @Autonomous(group = "drive")
 class SquareTest: LinearOpMode() {
-    fun acceptableError(error: Pose): Boolean{
-        return error.x.absoluteValue < 1.0 && error.y.absoluteValue < 1.0 && error.heading.absoluteValue < 0.04
-    }
     override fun runOpMode() {
         val drive = Drive(hardwareMap)
         val bulkReads = BulkReads(hardwareMap)
@@ -26,7 +23,7 @@ class SquareTest: LinearOpMode() {
             when {
                 state == 0 -> {
                     drive.targetPose = Pose(12.0, 12.0, 0.0)
-                    if (acceptableError(drive.targetPose - drive.localizer.pose)) {
+                    if (drive.localizer.pose.inSquare(drive.targetPose, 1.5,1.5,0.04)) {
                         state = 1
                     }
                 }
