@@ -2,13 +2,10 @@ package org.firstinspires.ftc.teamcode.drivetrain
 
 import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction
 import com.qualcomm.robotcore.hardware.HardwareMap
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotor
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.controlsystems.BangBang
-import org.firstinspires.ftc.teamcode.controlsystems.PD
 import org.firstinspires.ftc.teamcode.controlsystems.PDL
 import org.firstinspires.ftc.teamcode.controlsystems.SquID
 
@@ -46,6 +43,7 @@ class Drive(hwMap: HardwareMap) {
         blMotor.direction = Direction.REVERSE
         brMotor.direction = Direction.FORWARD
     }
+
     fun setMotorPowers(){
         flMotor.power = drive - strafe - turn
         frMotor.power = drive + strafe + turn
@@ -60,9 +58,26 @@ class Drive(hwMap: HardwareMap) {
 
         turn = SquID(AngleUnit.normalizeRadians(error.heading), kSqH)
         val translational = PDL(Vector.fromPose(error), Vector.fromPose(dError), kPT, kDT, kLT)
-        drive = translational.x * lateralFactor
+        drive = translational.x
         strafe = translational.y
         setMotorPowers()
     }
 
+    private fun calculateTranslationalPowers(movementVector: Vector): Pair<Double, Double>{
+        return Pair(movementVector.x, movementVector.y)
+    }
+
+    private fun getWheelVector(front: Boolean, left: Boolean): Vector{
+        return Vector.fromCartesian(
+            1.0,
+            if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
+        ).norm()
+    }
+
+    private fun getSidePowers(vector: Vector, wheelVectorA: Vector, wheelVectorB: Vector): Pair<Double, Double>{
+        return Pair(
+            (wheelVectorA.x*vector.y - vector.x*wheelVectorA.y) / (wheelVectorA.x*wheelVectorB.y - wheelVectorB.x*wheelVectorA.y),
+            (wheelVectorB.x*vector.y - vector.x*wheelVectorB.y) / (wheelVectorB.x*wheelVectorA.y - wheelVectorA.x*wheelVectorB.y)
+        )
+    }
 }
