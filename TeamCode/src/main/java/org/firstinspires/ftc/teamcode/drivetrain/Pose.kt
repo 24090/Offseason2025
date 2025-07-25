@@ -7,6 +7,8 @@ import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -25,8 +27,8 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
         return  (this - pose).inCircle(distanceTolerance, headingTolerance)
     }
     fun inCircle(distanceTolerance: Double, headingTolerance: Double): Boolean{
-        return  (Vector.fromPose(this).length.absoluteValue < distanceTolerance) &&
-                ((this.heading).absoluteValue < headingTolerance)
+        return  (Vector.fromPose(this).length < distanceTolerance) &&
+                ((this.heading) < headingTolerance)
     }
 
     operator fun plus(v: Pose): Pose{
@@ -49,14 +51,16 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
 
 class Vector {
     val angle: Double
+
+    // MUST BE POSITIVE!
     val length: Double
 
     private constructor(angle: Double, length: Double) {
         if (length < 0) {
-            this.angle = angle + PI
+            this.angle = AngleUnit.normalizeRadians(angle + PI)
             this.length = length.absoluteValue
         } else {
-            this.angle = angle
+            this.angle = AngleUnit.normalizeRadians(angle)
             this.length = length.absoluteValue
         }
     }
@@ -71,7 +75,8 @@ class Vector {
     }
 
     fun norm(): Vector = Vector(angle, 1.0);
-
+    fun normalized(): Vector = Vector(angle, clamp(length, 0.0, 1.0))
+    fun clampedLength(max: Double) = Vector(angle, clamp(length, 0.0, max))
     // dot product
     infix fun dot(v: Vector): Vector {
         return Vector(v.x * this.x, v.y * this.y)
@@ -89,4 +94,12 @@ class Vector {
     fun rotated(x: Number): Vector {
         return Vector(angle + x.toDouble(), length);
     }
+
+    override fun toString(): String {
+        return "[$x, $y]"
+    }
+}
+
+fun clamp(x: Double, min: Double, max: Double): Double {
+    return min(max(x, min), max)
 }

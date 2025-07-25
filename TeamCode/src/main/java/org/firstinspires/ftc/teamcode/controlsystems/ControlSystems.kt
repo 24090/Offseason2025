@@ -12,7 +12,7 @@ fun PDL(error: Double, dError: Double, kP: Double, kD: Double, kL: Double) = PD(
 fun PDL(error: Vector, dError: Vector, kP: Double, kD: Double, kL: Double) = PD(error, dError, kP, kD) + BangBang(error, kL)
 
 fun PDLT(error: Vector, dError: Vector, kP: Double, kD: Double, kL: Double, kThresh: Double) =
-    if (error.length.absoluteValue < kThresh)
+    if (error.length < kThresh)
         PD(error, dError, kP, kD) 
     else PDL(error, dError, kP, kD, kL)
 

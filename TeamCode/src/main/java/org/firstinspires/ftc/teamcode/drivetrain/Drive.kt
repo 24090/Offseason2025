@@ -8,6 +8,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotor
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.controlsystems.PDL
 import org.firstinspires.ftc.teamcode.controlsystems.SquID
+import kotlin.math.min
 
 @Configurable
 class Drive(hwMap: HardwareMap) {
@@ -21,6 +22,7 @@ class Drive(hwMap: HardwareMap) {
         @JvmField var kDT = 0.0;
         @JvmField var kLT = 0.0;
         @JvmField var threshT = 0.25;
+
     }
 
     var targetPose = Pose(0.0, 0.0, 0.0)
@@ -56,10 +58,14 @@ class Drive(hwMap: HardwareMap) {
     // Drive math, etc
 
     fun setMotorPowers(){
-        flMotor.power = drive - strafe - turn
-        frMotor.power = drive + strafe + turn
-        blMotor.power = drive + strafe - turn
-        brMotor.power = drive - strafe + turn
+        val driveVectors = getHeadingVectors().addNormalized(getTranslationalVectors())
+        val leftPowers = getSidePowers(driveVectors.left, getWheelVector(true, true), getWheelVector(false, true))
+        val rightPowers = getSidePowers(driveVectors.right, getWheelVector(true, false), getWheelVector(false, false))
+
+        flMotor.power = leftPowers.first
+        frMotor.power = rightPowers.first
+        blMotor.power = leftPowers.second
+        brMotor.power = rightPowers.second
     }
 
     fun update(){
@@ -74,16 +80,39 @@ class Drive(hwMap: HardwareMap) {
         setMotorPowers()
     }
 
-    private fun calculateTranslationalPowers(movementVector: Vector): Pair<Double, Double>{
-        return Pair(movementVector.x, movementVector.y)
+    // drive vector calculations
+
+    private data class DriveVectors(val left: Vector, val right: Vector){
+        fun addNormalized(addedVectors: DriveVectors): DriveVectors {
+            if (this.left.length >= 1 || this.right.length >= 1){
+                return this
+            }
+            val extraLeft = 1 - this.left.length
+            val extraRight = 1 - this.right.length
+            val scaleLeft = clamp(this.left.length, 0.0, extraLeft)/this.left.length
+            val scaleRight = clamp(this.right.length, 0.0, extraRight)/this.right.length
+            val scale = min(scaleLeft, scaleRight)
+            return DriveVectors(
+                this.left + addedVectors.left * scale,
+                this.right + addedVectors.right * scale
+            )
+        }
     }
 
-    private fun getWheelVector(front: Boolean, left: Boolean): Vector{
-        return Vector.fromCartesian(
-            1.0,
-            if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
-        ).norm()
-    }
+    private fun getTranslationalVectors() = DriveVectors(
+        left = Vector.fromCartesian(drive, strafe).normalized(),
+        right = Vector.fromCartesian(drive, strafe).normalized()
+    )
+
+    private fun getHeadingVectors() = DriveVectors(
+        left = Vector.fromCartesian(-turn, 0.0).normalized(),
+        right = Vector.fromCartesian(turn, 0.0).normalized()
+    )
+
+    private fun getWheelVector(front: Boolean, left: Boolean) = Vector.fromCartesian(
+        1.0,
+        if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
+    ).norm()
 
     private fun getSidePowers(vector: Vector, wheelVectorA: Vector, wheelVectorB: Vector): Pair<Double, Double>{
         return Pair(
