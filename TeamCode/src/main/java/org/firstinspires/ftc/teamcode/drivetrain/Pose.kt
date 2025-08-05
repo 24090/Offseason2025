@@ -46,6 +46,10 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
     operator fun unaryMinus(): Pose{
         return Pose(-x, -y, -heading)
     }
+
+    override fun toString(): String {
+        return "(x:" + "%.1f".format(x) +  "y:" + "%.1f".format(y) + "θ:" + "%.2f".format(heading) + ")"
+    }
 };
 
 
@@ -65,11 +69,11 @@ class Vector {
         }
     }
 
-    val x get() = length * sin(angle)
-    val y get() = length * cos(angle)
+    val x get() = length * cos(angle)
+    val y get() = length * sin(angle)
 
     companion object {
-        fun fromCartesian(x: Double, y: Double) = Vector(atan2(y, x), sqrt(x*x + y*x))
+        fun fromCartesian(x: Double, y: Double) = Vector(atan2(y, x), sqrt(x*x + y*y))
         fun fromPolar(angle: Double,  length: Double) = Vector(angle, length)
         fun fromPose(pose: Pose) = fromCartesian(pose.x, pose.y)
     }
@@ -101,5 +105,6 @@ class Vector {
 }
 
 fun clamp(x: Double, min: Double, max: Double): Double {
+    assert(min <= max)
     return min(max(x, min), max)
 }

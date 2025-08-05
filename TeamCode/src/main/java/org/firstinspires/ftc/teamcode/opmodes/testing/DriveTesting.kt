@@ -2,34 +2,44 @@ package org.firstinspires.ftc.teamcode.opmodes.testing
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.drivetrain.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.util.BulkReads
+import kotlin.math.PI
 import kotlin.math.absoluteValue
 
-@Autonomous(group = "drive")
-class SquareTest: LinearOpMode() {
+@TeleOp(group = "drive")
+class MoveTest: LinearOpMode() {
     override fun runOpMode() {
         val drive = Drive(hardwareMap)
         val bulkReads = BulkReads(hardwareMap)
 
         waitForStart()
-        var state = 0;
         drive.localizer.pose = Pose(0.0,0.0,0.0)
         while (opModeIsActive()){
             bulkReads.update()
             drive.update()
-
-            when {
-                state == 0 -> {
-                    drive.targetPose = Pose(12.0, 12.0, 0.0)
-                    if (drive.atTargetSquare(1.5,1.5,0.04)) {
-                        state = 1
-                    }
-                }
+            if (gamepad1.yWasReleased()) {
+                drive.targetPose.x += 6
             }
-
-            telemetry.addData("heading", drive.localizer.heading)
+            if (gamepad1.aWasReleased()) {
+                drive.targetPose.x -= 12
+            }
+            if (gamepad1.xWasReleased()) {
+                drive.targetPose.y += 12
+            }
+            if (gamepad1.bWasReleased()) {
+                drive.targetPose.y -= 12
+            }
+            if (gamepad1.leftBumperWasReleased()) {
+                drive.targetPose.heading += PI/4
+            }
+            if (gamepad1.rightBumperWasReleased()) {
+                drive.targetPose.heading -= PI/4
+            }
+            telemetry.addData("error", drive.error)
+            telemetry.addData("dError", drive.dError)
             telemetry.addData("drive", drive.drive)
             telemetry.addData("strafe", drive.strafe)
             telemetry.addData("turn", drive.turn)

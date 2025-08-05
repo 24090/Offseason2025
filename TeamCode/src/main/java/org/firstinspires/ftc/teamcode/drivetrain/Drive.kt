@@ -1,13 +1,17 @@
 package org.firstinspires.ftc.teamcode.drivetrain
 
+import com.bylazar.ftcontrol.panels.Logger
 import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction
 import com.qualcomm.robotcore.hardware.HardwareMap
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotor
+import org.firstinspires.ftc.robotcore.external.Telemetry.Log
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.controlsystems.PDL
+import org.firstinspires.ftc.teamcode.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.controlsystems.SquID
+import java.io.Console
 import kotlin.math.min
 
 @Configurable
@@ -15,17 +19,20 @@ class Drive(hwMap: HardwareMap) {
     val localizer = Localizer(hwMap)
 
     companion object DriveConstants{
-        @JvmField var lateralFactor = 1.0
+        @JvmField var lateralFactor = 0.8
 
-        @JvmField var kSqH = 0.0;
-        @JvmField var kPT = 0.0;
-        @JvmField var kDT = 0.0;
-        @JvmField var kLT = 0.0;
-        @JvmField var threshT = 0.25;
-
+        @JvmField var kSqH = 0.8;
+        @JvmField var kPT = 0.05;
+        @JvmField var kDT = 0.001;
+        @JvmField var kLT = 0.23;
+        @JvmField var threshT = 0.7071067812;
     }
 
     var targetPose = Pose(0.0, 0.0, 0.0)
+    val error
+        get() = localizer.fieldPoseToRelative(targetPose)
+    val dError
+        get() = localizer.poseVel
     private val flMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "flMotor"));
         fun setFlPower(power: Double){flMotor.power = power}
     private val frMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "frMotor"));
@@ -34,6 +41,13 @@ class Drive(hwMap: HardwareMap) {
         fun setBlPower(power: Double){blMotor.power = power}
     private val brMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java,"brMotor"));
         fun setBrPower(power: Double){brMotor.power = power}
+
+    private fun setZeroPowerBehaviours(zeroPowerBehavior: ZeroPowerBehavior){
+        flMotor.zeroPowerBehavior = zeroPowerBehavior
+        frMotor.zeroPowerBehavior = zeroPowerBehavior
+        blMotor.zeroPowerBehavior = zeroPowerBehavior
+        brMotor.zeroPowerBehavior = zeroPowerBehavior
+    }
 
     var drive = 0.0;
     var strafe = 0.0;
@@ -44,6 +58,7 @@ class Drive(hwMap: HardwareMap) {
         frMotor.direction = Direction.FORWARD
         blMotor.direction = Direction.REVERSE
         brMotor.direction = Direction.FORWARD
+        setZeroPowerBehaviours(ZeroPowerBehavior.FLOAT)
     }
 
     // Util
@@ -70,13 +85,12 @@ class Drive(hwMap: HardwareMap) {
 
     fun update(){
         localizer.update()
-        val error = localizer.fieldPoseToRelative(targetPose)
-        val dError = localizer.poseVel
+
 
         turn = SquID(AngleUnit.normalizeRadians(error.heading), kSqH)
-        val translational = PDL(Vector.fromPose(error), Vector.fromPose(dError), kPT, kDT, kLT)
-        drive = translational.x
-        strafe = translational.y
+        val translational = PDLT(Vector.fromPose(error), Vector.fromPose(dError), kPT, kDT, kLT, threshT)
+        drive = if (translational.x.isNaN()) 0.0 else translational.x
+        strafe = if (translational.y.isNaN()) 0.0 else translational.y
         setMotorPowers()
     }
 
@@ -84,18 +98,30 @@ class Drive(hwMap: HardwareMap) {
 
     private data class DriveVectors(val left: Vector, val right: Vector){
         fun addNormalized(addedVectors: DriveVectors): DriveVectors {
-            if (this.left.length >= 1 || this.right.length >= 1){
-                return this
-            }
+            // extra space available for left vector
             val extraLeft = 1 - this.left.length
+            // extra space available for right vector
             val extraRight = 1 - this.right.length
-            val scaleLeft = clamp(this.left.length, 0.0, extraLeft)/this.left.length
-            val scaleRight = clamp(this.right.length, 0.0, extraRight)/this.right.length
+            // the scaling that the left vector needs to have length <= extraLeft
+            val scaleLeft =
+                if (addedVectors.left.length != 0.0)
+                    clamp(addedVectors.left.length, 0.0, extraLeft)/addedVectors.left.length
+                else
+                    1.0
+            // the scaling that the right vector needs to have length <= extraRight
+            val scaleRight =
+                if (addedVectors.right.length != 0.0)
+                    clamp(addedVectors.right.length, 0.0, extraRight)/addedVectors.right.length
+                else
+                    1.0
             val scale = min(scaleLeft, scaleRight)
             return DriveVectors(
                 this.left + addedVectors.left * scale,
                 this.right + addedVectors.right * scale
             )
+        }
+        override fun toString(): String {
+            return "[L $left, R $right]"
         }
     }
 
@@ -114,10 +140,12 @@ class Drive(hwMap: HardwareMap) {
         if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
     ).norm()
 
-    private fun getSidePowers(vector: Vector, wheelVectorA: Vector, wheelVectorB: Vector): Pair<Double, Double>{
-        return Pair(
-            (wheelVectorA.x*vector.y - vector.x*wheelVectorA.y) / (wheelVectorA.x*wheelVectorB.y - wheelVectorB.x*wheelVectorA.y),
-            (wheelVectorB.x*vector.y - vector.x*wheelVectorB.y) / (wheelVectorB.x*wheelVectorA.y - wheelVectorA.x*wheelVectorB.y)
-        )
-    }
+    private fun getSidePowers(targetVector: Vector, wheelVectorA: Vector, wheelVectorB: Vector) = Pair(
+        // Math derived from the following
+        // Ax = b
+        // x = (A^-1)b
+        // A is the matrix describing the wheel vectors, b is the target vector , x is the output powers
+        (wheelVectorA.x*targetVector.y - targetVector.x*wheelVectorA.y) / (wheelVectorA.x*wheelVectorB.y - wheelVectorB.x*wheelVectorA.y),
+        (wheelVectorB.x*targetVector.y - targetVector.x*wheelVectorB.y) / (wheelVectorB.x*wheelVectorA.y - wheelVectorA.x*wheelVectorB.y)
+    )
 }

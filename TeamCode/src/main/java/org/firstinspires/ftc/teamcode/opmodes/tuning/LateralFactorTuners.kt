@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.tuning
 
+import com.bylazar.ftcontrol.panels.Panels
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -16,6 +17,7 @@ abstract class MaxSpeedTuner: LinearOpMode () {
     abstract val turn: Double;
     private var maxSpeed: Double = 0.0;
     override fun runOpMode() {
+        val telemetry = Panels.getTelemetry()
         val drivetrain = Drive(hardwareMap);
         val bulkReads = BulkReads(hardwareMap);
         val speeds = ArrayList<Double>()
@@ -31,8 +33,7 @@ abstract class MaxSpeedTuner: LinearOpMode () {
             bulkReads.update()
             speeds.add(Vector.fromPose(drivetrain.localizer.poseVel).length)
         };
-
-        telemetry.addData("Avg Speed", speeds.average())
+        telemetry.debug("Avg Speed", speeds.average().toString())
         telemetry.update()
     }
 }
@@ -46,7 +47,7 @@ class StrafeSpeedTuner: MaxSpeedTuner() {
 
 @TeleOp(group = "Drive")
 class DriveSpeedTuner: MaxSpeedTuner() {
-    override val drive: Double = 0.0;
-    override val strafe: Double = 1.0;
+    override val drive: Double = 1.0;
+    override val strafe: Double = 0.0;
     override val turn: Double = 0.0;
 }
