@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotor
 import org.firstinspires.ftc.robotcore.external.Telemetry.Log
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.firstinspires.ftc.teamcode.clamp
 import org.firstinspires.ftc.teamcode.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.controlsystems.SquID
 import java.io.Console

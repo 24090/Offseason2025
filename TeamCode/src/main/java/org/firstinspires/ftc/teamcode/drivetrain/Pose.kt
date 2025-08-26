@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.drivetrain
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
+import org.firstinspires.ftc.teamcode.clamp
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
@@ -41,6 +42,10 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
 
     operator fun times(v: Number): Pose{
         return Pose(x * v.toDouble(), y * v.toDouble(), heading * v.toDouble())
+    }
+
+    operator fun div(v: Number): Pose{
+        return Pose(x / v.toDouble(), y / v.toDouble(), heading / v.toDouble())
     }
 
     operator fun unaryMinus(): Pose{
@@ -102,9 +107,4 @@ class Vector {
     override fun toString(): String {
         return "[$x, $y]"
     }
-}
-
-fun clamp(x: Double, min: Double, max: Double): Double {
-    assert(min <= max)
-    return min(max(x, min), max)
 }
